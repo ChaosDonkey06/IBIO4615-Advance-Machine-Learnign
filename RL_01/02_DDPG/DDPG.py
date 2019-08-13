@@ -1,14 +1,13 @@
 import argparse
 from itertools import count
-
 import os, sys, random
 import numpy as np
-
 import gym
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import matplotlib.pyplot as plt
 from torch.distributions import Normal
 from tensorboardX import SummaryWriter
 
@@ -20,7 +19,7 @@ Not the author's implementation !
 '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--mode', default='test', type=str) # mode = 'train' or 'test'
+parser.add_argument('--mode', default='train', type=str) # mode = 'train' or 'test'
 # OpenAI gym environment name, # ['BipedalWalker-v2', 'Pendulum-v0'] or any continuous environment
 # Note that DDPG is feasible about hyper-parameters.
 
@@ -31,28 +30,30 @@ parser.add_argument('--tau',  default=0.005, type=float) # target smoothing coef
 parser.add_argument('--target_update_interval', default=1, type=int)
 parser.add_argument('--test_iteration', default=10, type=int)
 
-parser.add_argument('--learning_rate', default=1e-3, type=float)
-parser.add_argument('--gamma', default=0.99, type=int) # discounted factor
-parser.add_argument('--capacity', default=50000, type=int) # replay buffer size
-parser.add_argument('--batch_size', default=64, type=int) # mini batch size
+parser.add_argument('--learning_rate', default=1e-3, type=float) # same for critic and actor
+parser.add_argument('--gamma', default=0.99, type=int) # discount factor (is high cause dynamics are super fast)
+parser.add_argument('--capacity', default=50000, type=int) # replay buffer size (should change based on your resources)
+parser.add_argument('--batch_size', default=64, type=int) # mini batch size (same for both critic and actor)
 parser.add_argument('--seed', default=False, type=bool)
 parser.add_argument('--random_seed', default=9527, type=int)
 # optional parameters
 
-parser.add_argument('--sample_frequency', default=256, type=int) # in case you change the model!
-parser.add_argument('--render', default=True, type=bool) # show UI or not
+parser.add_argument('--sample_frequency', default=256, type=int) # in case you change the model to image model
+parser.add_argument('--render', default=False, type=bool) # show UI (best your for test)
+parser.add_argument('--show_performance', default=True, type=bool) # show performance when train/test ends
 parser.add_argument('--log_interval', default=50, type=int) #
-parser.add_argument('--load', default=True, type=bool) # load model
+parser.add_argument('--load', default=False, type=bool) # load pre-trained model
 parser.add_argument('--render_interval', default=100, type=int) # after render_interval, the env.render() will work
 parser.add_argument('--exploration_noise', default=0.1, type=float)
-parser.add_argument('--max_episode', default=5000, type=int) # num of games
-parser.add_argument('--max_length_of_trajectory', default=2000, type=int) # num of games
-parser.add_argument('--print_log', default=5, type=int)
-parser.add_argument('--update_iteration', default=10, type=int)
+parser.add_argument('--max_episode', default=5000, type=int) # num of episodes for train
+parser.add_argument('--max_length_of_trajectory', default=2000, type=int) # length of game
+parser.add_argument('--print_log', default=5, type=int) # print performance every print_log epoch
+parser.add_argument('--update_iteration', default=10, type=int) # update critic network
+
 args = parser.parse_args()
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-script_name = os.path.basename(__file__)
+script_name = 'DDPG'
 env = gym.make(args.env_name).unwrapped
 
 if args.seed:
@@ -65,7 +66,7 @@ action_dim = env.action_space.shape[0]
 max_action = float(env.action_space.high[0])
 min_Val = torch.tensor(1e-7).float().to(device) # min value
 
-directory = './exp' + script_name + args.env_name +'./'
+directory = './Trained_Models/' + script_name + '_' + args.env_name +'/'
 
 class Replay_buffer():
     '''
@@ -85,11 +86,11 @@ class Replay_buffer():
         else:
             self.storage.append(data)
 
-    def sample(self, batch_size):
+    def sample(self, batch_size): # sample sequential data from memory buffer
         ind = np.random.randint(0, len(self.storage), size=batch_size)
         x, y, u, r, d = [], [], [], [], []
 
-        for i in ind:
+        for i in ind: # concatenate sequence for forward
             X, Y, U, R, D = self.storage[i]
             x.append(np.array(X, copy=False)) # current state
             y.append(np.array(Y, copy=False)) # future state
@@ -100,7 +101,7 @@ class Replay_buffer():
         return np.array(x), np.array(y), np.array(u), np.array(r).reshape(-1, 1), np.array(d).reshape(-1, 1)
 
 
-class Actor(nn.Module):
+class Actor(nn.Module): # Actor estimate policy \pi, maps from state -> action
     def __init__(self, state_dim, action_dim, max_action):
         super(Actor, self).__init__()
 
@@ -108,16 +109,16 @@ class Actor(nn.Module):
         self.l2 = nn.Linear(400, 300)
         self.l3 = nn.Linear(300, action_dim)
 
-        self.max_action = max_action
+        self.max_action = max_action # max action (action bound)
 
     def forward(self, x):
         x = F.relu(self.l1(x))
         x = F.relu(self.l2(x))
-        x = self.max_action*torch.tanh(self.l3(x)) #tanh maps to [-1,1] then multiply by control action bound.
+        x = self.max_action*torch.tanh(self.l3(x)) #tanh maps to [-1,1] then multiply by control-action bound.
         return x
 
 
-class Critic(nn.Module):
+class Critic(nn.Module): # Critic estimate Q(s,a), maps from (state + action) -> return (estimated return)
     def __init__(self, state_dim, action_dim):
         super(Critic, self).__init__()
 
@@ -132,24 +133,25 @@ class Critic(nn.Module):
         return x
 
 
-class DDPG(object):
+class DDPG(object): # DDPG algorithm
     def __init__(self, state_dim, action_dim, max_action):
-        self.actor = Actor(state_dim, action_dim, max_action).to(device)
-        self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
-        self.actor_target.load_state_dict(self.actor.state_dict())
-        self.actor_optimizer = optim.Adam(self.actor.parameters(), args.learning_rate)
 
-        self.critic = Critic(state_dim, action_dim).to(device)
-        self.critic_target = Critic(state_dim, action_dim).to(device)
-        self.critic_target.load_state_dict(self.critic.state_dict())
+        self.actor = Actor(state_dim, action_dim, max_action).to(device) # create Actor
+        self.actor_target = Actor(state_dim, action_dim, max_action).to(device) # create target Actor
+        self.actor_target.load_state_dict(self.actor.state_dict()) # if load -> load actor trained model
+        self.actor_optimizer = optim.Adam(self.actor.parameters(), args.learning_rate) # define optimizer 
+
+        self.critic = Critic(state_dim, action_dim).to(device) # create Critic
+        self.critic_target = Critic(state_dim, action_dim).to(device) # create target Critic
+        self.critic_target.load_state_dict(self.critic.state_dict()) # if load -> load critic trained model
         self.critic_optimizer = optim.Adam(self.critic.parameters(), args.learning_rate)
-        self.replay_buffer = Replay_buffer()
-        self.writer = SummaryWriter(directory)
+        self.replay_buffer = Replay_buffer() # initiallize replay buffer memory
+        self.writer = SummaryWriter(directory) 
         self.num_critic_update_iteration = 0
         self.num_actor_update_iteration = 0
         self.num_training = 0
 
-    def select_action(self, state):
+    def select_action(self, state): # return deterministic action from Actor
         state = torch.FloatTensor(state.reshape(1, -1)).to(device)
         return self.actor(state).cpu().data.numpy().flatten()
 
@@ -173,6 +175,7 @@ class DDPG(object):
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q, target_Q)
+
             self.writer.add_scalar('Loss/critic_loss', critic_loss, global_step=self.num_critic_update_iteration)
             # Optimize the critic
             self.critic_optimizer.zero_grad()
@@ -225,7 +228,7 @@ def main():
                 ep_r += reward
                 env.render()
                 if done or t >= args.max_length_of_trajectory:
-                    print("Ep_i \t{}, the ep_r is \t{:0.2f}, the step is \t{}".format(i, ep_r, t))
+                    print("Episode: \t{}, the episode reward is \t{:0.2f}, the environment step was \t{}".format(i, ep_r, t))
                     ep_r = 0
                     break
                 state = next_state
@@ -235,8 +238,11 @@ def main():
         print("Collection Experience...")
         print("====================================")
         if args.load: agent.load()
+        ep_reward = []                                                                                  
         for i in range(args.max_episode):
             state = env.reset()
+
+
             for t in count():
                 action = agent.select_action(state)
 
@@ -255,14 +261,28 @@ def main():
                 if done or t >= args.max_length_of_trajectory:
                     agent.writer.add_scalar('ep_r', ep_r, global_step=i)
                     if i % args.print_log == 0:
-                        print("Ep_i \t{}, the ep_r is \t{:0.2f}, the step is {}".format(i, ep_r, t))
+                        print("Episode: \t{} | Episode Reward \t{:0.2f} | Environment Step {}".format(i, ep_r, t))
+                    ep_reward.append(ep_r)
                     ep_r = 0
                     break
 
             if i % args.log_interval == 0:
                 agent.save()
+                print("Saving model ...")
             if len(agent.replay_buffer.storage) >= args.capacity-1:
                 agent.update()
+
+        if args.show_performance:
+        			
+                    ep_reward = np.array(ep_reward)
+                    ep_reward = (ep_reward-np.min(ep_reward))/(np.max(ep_reward)-np.min(ep_reward))
+                    
+                    plt.plot(range(args.max_episode),ep_reward,'k')
+                    plt.xlabel('Episode')
+                    plt.ylabel('Normalized Reward')
+
+                    #plt.save_fig(directory+'reward_vs_episode.png')
+                    plt.show()
 
     else:
         raise NameError("mode wrong!!!")
