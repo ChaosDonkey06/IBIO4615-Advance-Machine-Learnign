@@ -158,7 +158,7 @@ if __name__ == '__main__':
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
-            if batch_idx/args.batch_size == 0:
+            if batch_idx/args.batch_size == 0 or batch_idx/args.batch_size==0.5:
                 print('Epoch: [{}][{}/{}]'
                     'Time: {batch_time.val:.3f} ({batch_time.avg:.3f}) '
                     'Data: {data_time.val:.3f} ({data_time.avg:.3f}) '
