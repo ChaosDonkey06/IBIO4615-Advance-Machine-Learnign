@@ -159,16 +159,13 @@ if __name__ == '__main__':
             batch_time.update(time.time() - end)
             end = time.time()
 
-            #print('Epoch: [{}][{}/{}]'
-            #    'Time: {batch_time.val:.3f} ({batch_time.avg:.3f}) '
-            #    'Data: {data_time.val:.3f} ({data_time.avg:.3f}) '
-            #    'Loss: {train_loss.val:.4f} ({train_loss.avg:.4f})'.format(
-            #    epoch, batch_idx, len(trainloader), batch_time=batch_time, data_time=data_time, train_loss=train_loss))
+        print('Epoch: {} | Loss: ({train_loss.avg:.4f})'.format(epoch,train_loss=train_loss))
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         train(epoch)
         
         acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
+        print('Epoch: {} | Accuracy: ({})'.format(epoch,acc))
 
         if acc > best_acc:
             print('Saving..')
