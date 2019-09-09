@@ -158,6 +158,12 @@ if __name__ == '__main__':
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
+            if batch_idx/args.batch_size == 0:
+                print('Epoch: [{}][{}/{}]'
+                    'Time: {batch_time.val:.3f} ({batch_time.avg:.3f}) '
+                    'Data: {data_time.val:.3f} ({data_time.avg:.3f}) '
+                    'Loss: {train_loss.val:.4f} ({train_loss.avg:.4f})'.format(
+                    epoch, batch_idx, len(trainloader), batch_time=batch_time, data_time=data_time, train_loss=train_loss))
 
         print('Epoch: {} | Loss: ({train_loss.avg:.4f})'.format(epoch,train_loss=train_loss))
 
