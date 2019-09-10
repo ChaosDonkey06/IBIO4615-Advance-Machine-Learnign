@@ -78,6 +78,7 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
     testsize = testloader.dataset.__len__()
 
     trainFeatures = lemniscate.memory.t()
+
     if hasattr(trainloader.dataset, 'imgs'):
         trainLabels = torch.LongTensor([y for (p, y) in trainloader.dataset.imgs]).cuda()
     else:
@@ -118,10 +119,8 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
             end = time.time()
             targets = targets.cuda(non_blocking=True)
             batchSize = inputs.size(0)
-            print(inputs.shape)
             features , _ = net(inputs)
 
-            print("SHAPE OF EXTARACTED FEATURES {}".format(features.shape))
             net_time.update(time.time() - end)
             end = time.time()
 
