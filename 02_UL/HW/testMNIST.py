@@ -29,7 +29,11 @@ def NN(epoch, net, lemniscate, trainloader, testloader, recompute_memory=0):
             batchSize = inputs.size(0)
             features = net(inputs)
             trainFeatures[:, batch_idx*batchSize:batch_idx*batchSize+batchSize] = features.data.t()
-        trainLabels = torch.LongTensor(temploader.dataset.targets).cuda()
+        
+        if not(torch.cuda.is_available()):
+            trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
+        else:
+            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).cuda()
         trainloader.dataset.transform = transform_bak
     
     end = time.time()
@@ -75,7 +79,6 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
     if hasattr(trainloader.dataset, 'imgs'):
         trainLabels = torch.LongTensor([y for (p, y) in trainloader.dataset.imgs]).cuda()
     else:
-        print(type(trainloader.dataset))
         if not(torch.cuda.is_available()):
             trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
         else:
@@ -91,7 +94,11 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
             batchSize = inputs.size(0)
             features = net(inputs)
             trainFeatures[:, batch_idx*batchSize:batch_idx*batchSize+batchSize] = features.data.t()
-        trainLabels = torch.LongTensor(temploader.dataset.targets).cuda()
+        
+        if not(torch.cuda.is_available()):
+            trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
+        else:
+            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).cuda()        
         trainloader.dataset.transform = transform_bak
     
     top1 = 0.

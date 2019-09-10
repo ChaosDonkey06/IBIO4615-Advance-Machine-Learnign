@@ -44,11 +44,14 @@ parser.add_argument('--epochs', default=20, type=int, metavar='N',
 parser.add_argument('--batch_size', default=20, type=int, help='training batch size')
 parser.add_argument('--batch_size_test', default=100, type=int, help='test batch size')
 
+parser.add_argument('--recons_weigth', default=0.6, type=float, help='weigth of reconstruction')
+
 args = parser.parse_args()
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
+
 
 if __name__ == '__main__':
 
@@ -80,7 +83,9 @@ if __name__ == '__main__':
     ndata = trainset.__len__()
 
     print('==> Building model..')
-    net = models.__dict__['ResNet18'](low_dim = args.low_dim)
+
+    net = models.__dict__['ChaosDonkey06_AE']( low_dim=args.low_dim, n_hidden = 256,output_dim=1024)
+
     # define leminiscate
     if args.nce_k > 0:
         lemniscate = NCEAverage(args.low_dim, ndata, args.nce_k, args.nce_t, args.nce_m)
@@ -105,12 +110,17 @@ if __name__ == '__main__':
     # define loss function
     if hasattr(lemniscate, 'K'):
         criterion = NCECriterion(ndata)
+        criterion_AE = nn.MSELoss()
+
     else:
         criterion = nn.CrossEntropyLoss()
+        criterion_AE = nn.MSELoss()
 
     net.to(device)
     lemniscate.to(device)
     criterion.to(device)
+    criterion_AE.to(device)
+    
 
     if args.test_only:
         acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
@@ -146,18 +156,25 @@ if __name__ == '__main__':
             inputs, targets, indexes = inputs.to(device), targets.to(device), indexes.to(device)
             optimizer.zero_grad()
 
-            features = net(inputs)
-            outputs = lemniscate(features, indexes)
-            loss = criterion(outputs, indexes)
+            features_lantentspace, decoded_output = net(inputs)
+            outputs = lemniscate(features_lantentspace, indexes)
+
+            loss1 = criterion(outputs, indexes)
+            loss2 = criterion(decoded_output, inputs.view(-1,inputs.shape[2]*inputs.shape[3]))
+
+            loss = (1-args.recons_weigth)*loss1 + recons_weigth*loss2
 
             loss.backward()
             optimizer.step()
 
             train_loss.update(loss.item(), inputs.size(0))
 
+            
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
+
+
             if batch_idx%100 == 0:
                 print('Epoch: [{}][{}/{}]'
                     'Time: {batch_time.val:.3f} ({batch_time.avg:.3f}) '
@@ -167,15 +184,11 @@ if __name__ == '__main__':
 
         print('Epoch: {} | Loss: ({train_loss.avg:.4f})'.format(epoch,train_loss=train_loss))
 
-    file1 = open("./resnet18_acc_train.txt","a")  
-    file2 = open("./resnet18_acc_test.txt","a")     
     for epoch in range(start_epoch, start_epoch+args.epochs):
         train(epoch)
         
         acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
         print('Epoch: {} | Accuracy: ({})'.format(epoch,acc))
-
-        file1.write('{} | {} \n'.format(epoch,acc)) 
 
         if acc > best_acc:
             print('Saving..')
@@ -193,5 +206,4 @@ if __name__ == '__main__':
         print('best accuracy: {:.2f}'.format(best_acc*100))
 
     acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
-    file2.write('{} | {} \n'.format(epoch,acc)) 
     print('last accuracy: {:.2f}'.format(acc*100))
