@@ -193,10 +193,10 @@ if __name__ == '__main__':
     for epoch in range(start_epoch, start_epoch+args.epochs):
         t_loss=train(epoch)
         
-        #acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
+        acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
         print('Epoch: {} | Accuracy: ({})'.format(epoch,t_loss))
         file1.write('{} | {} \n'.format(epoch,t_loss)) 
-        acc=0
+        #acc=0
         if acc > best_acc:
             print('Saving..')
             state = {
