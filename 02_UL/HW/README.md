@@ -8,6 +8,7 @@
 
 - Propose a Encoder-Decoder Architecture so MNIST images can be reconstructed
 
+### Results
   The figure below shows the results from adapting the code with the resnet18 architecture compared with a encoder-decoder  with the proposed architecture.
 
   
