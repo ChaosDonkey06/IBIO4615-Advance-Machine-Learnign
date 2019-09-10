@@ -96,10 +96,11 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
             targets = targets.cuda(non_blocking=True)
             batchSize = inputs.size(0)
 
-            features = net(inputs)
+            features,_ = net(inputs)
 
             trainFeatures[:, batch_idx*batchSize:batch_idx*batchSize+batchSize] = features.data.t()
         
+
         if not(torch.cuda.is_available()):
             trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
         else:
@@ -115,7 +116,7 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
             end = time.time()
             targets = targets.cuda(non_blocking=True)
             batchSize = inputs.size(0)
-            features = net(inputs)
+            features,_ = net(inputs)
             net_time.update(time.time() - end)
             end = time.time()
 
