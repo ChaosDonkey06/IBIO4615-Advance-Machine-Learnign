@@ -160,9 +160,10 @@ if __name__ == '__main__':
             outputs = lemniscate(features_lantentspace, indexes)
 
             loss1 = criterion(outputs, indexes)
-            loss2 = criterion(decoded_output, inputs.view(-1,inputs.shape[2]*inputs.shape[3]))
+            flat_inp = inputs.view(-1,inputs.shape[2]*inputs.shape[3]) 
+            loss2 = criterion_AE( decoded_output, flat_inp )
 
-            loss = (1-args.recons_weigth)*loss1 + recons_weigth*loss2
+            loss = (1-args.recons_weigth)*loss1 + (args.recons_weigth)*loss2
 
             loss.backward()
             optimizer.step()
