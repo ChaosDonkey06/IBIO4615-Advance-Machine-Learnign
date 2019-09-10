@@ -11,9 +11,9 @@
   The figure below shows the results from adapting the code with the resnet18 architecture compared with a encoder-decoder  with the proposed architecture.
 
   
-  As the loss in both problems is different we use the accuracy that used kNN for measuring the classification. Is impossible to compare the performance of both as the loss for the encoder-decoder consider the reconstruction loss (the loss that captures how good the decoder maps from the latent space to the image-input space.
+  As the loss in both problems is different we use the accuracy that used kNN for measuring the classification. Is impossible to compare the performance of both as the loss for the encoder-decoder consider the reconstruction loss (the loss that captures how good the decoder maps from the latent space to the image-input space. The reconstruct loss just count the pixel-pixel variation in the reconstruction using de L2 norm.
   
-  As is shown the performance obtained by resnet18 is way better than the one achieved only by the encoder-decoder with the enconder suggested architecture. 
+ Below is shown the performance obtained by resnet18 is way better than the one achieved only by the encoder-decoder with the enconder suggested architecture. 
   
 ![Top 1 Accuracy](./figures/performance.png)  
 
