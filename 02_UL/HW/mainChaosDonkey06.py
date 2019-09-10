@@ -196,7 +196,7 @@ if __name__ == '__main__':
         #acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
         print('Epoch: {} | Accuracy: ({})'.format(epoch,t_loss))
         file1.write('{} | {} \n'.format(epoch,t_loss)) 
-
+        acc=0
         if acc > best_acc:
             print('Saving..')
             state = {
