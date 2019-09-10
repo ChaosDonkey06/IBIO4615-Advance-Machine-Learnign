@@ -41,7 +41,7 @@ def NN(epoch, net, lemniscate, trainloader, testloader, recompute_memory=0):
         for batch_idx, (inputs, targets, indexes) in enumerate(testloader):
             targets = targets.cuda(non_blocking=True)
             batchSize = inputs.size(0)
-            features = net(inputs)
+            features, _ = net(inputs)
             net_time.update(time.time() - end)
             end = time.time()
 
