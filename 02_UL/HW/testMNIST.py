@@ -82,7 +82,7 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
         if not(torch.cuda.is_available()):
             trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
         else:
-            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).cuda()
+            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).device()
     C = trainLabels.max() + 1
 
     if recompute_memory:
@@ -98,7 +98,7 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
         if not(torch.cuda.is_available()):
             trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
         else:
-            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).cuda()        
+            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).device()        
         trainloader.dataset.transform = transform_bak
     
     top1 = 0.
