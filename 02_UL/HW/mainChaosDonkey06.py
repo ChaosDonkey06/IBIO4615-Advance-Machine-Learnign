@@ -195,7 +195,7 @@ if __name__ == '__main__':
         acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
 
         print('Epoch: {} | Accuracy: ({})'.format(epoch,acc))
-        file1.write('{} | {} \n'.format(epoch,t_loss)) 
+        file1.write('{} | {} \n'.format(epoch,acc)) 
         #acc=0
         if acc > best_acc:
             print('Saving..')
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
         print('best accuracy: {:.2f}'.format(best_acc*100))
 
-    #acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
-    #file2.write('{} | {} \n'.format(epoch,acc)) 
+    acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
+    file2.write('{} | {} \n'.format(epoch,acc)) 
 
     print('last accuracy: {:.2f}'.format(acc*100))
