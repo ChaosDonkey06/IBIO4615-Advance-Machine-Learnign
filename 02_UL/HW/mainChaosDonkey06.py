@@ -76,7 +76,7 @@ if __name__ == '__main__':
     trainset = datasets.MNISTInstance(root='./data', train=True, download=True, transform=transform_train)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=1)
 
-    testset = datasets.MNISTInstance(root='./data', train=False, download=True, transform=transform_test)
+    testset = datasets.MNISTInstance(root='./data', train=False, download=True, transform=transform_train)
     testloader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size_test, shuffle=False, num_workers=1)
 
     classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
@@ -193,7 +193,7 @@ if __name__ == '__main__':
         train(epoch)
         
         acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
-        
+
         print('Epoch: {} | Accuracy: ({})'.format(epoch,t_loss))
         file1.write('{} | {} \n'.format(epoch,t_loss)) 
         #acc=0
