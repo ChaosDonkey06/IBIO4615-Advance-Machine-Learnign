@@ -25,7 +25,7 @@ from lib.NCEAverage import NCEAverage
 from lib.LinearAverage import LinearAverage
 from lib.NCECriterion import NCECriterion
 from lib.utils import AverageMeter
-from testMNIST import NN, kNN
+from testChaosDonkey06 import NN, kNN
 
 parser = argparse.ArgumentParser(description='PyTorch MNIST Training')
 parser.add_argument('--lr', default=0.03, type=float, help='learning rate')
