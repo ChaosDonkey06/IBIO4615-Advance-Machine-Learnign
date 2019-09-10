@@ -69,7 +69,6 @@ def NN(epoch, net, lemniscate, trainloader, testloader, recompute_memory=0):
     return correct/total
 
 def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_memory=0):
-    device = 
 
 
     net.eval()
@@ -85,7 +84,8 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
         if not(torch.cuda.is_available()):
             trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
         else:
-            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).device()
+            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).cuda()
+
     C = trainLabels.max() + 1
 
     if recompute_memory:
@@ -104,7 +104,7 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
         if not(torch.cuda.is_available()):
             trainLabels = torch.LongTensor( trainloader.dataset.targets ).cuda()
         else:
-            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).device()        
+            trainLabels = torch.LongTensor( trainloader.dataset.train_labels ).cuda()     
         trainloader.dataset.transform = transform_bak
     
     top1 = 0.
