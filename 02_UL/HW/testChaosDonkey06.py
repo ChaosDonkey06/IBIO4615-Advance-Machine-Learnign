@@ -27,7 +27,7 @@ def NN(epoch, net, lemniscate, trainloader, testloader, recompute_memory=0):
         for batch_idx, (inputs, targets, indexes) in enumerate(temploader):
             targets = targets.cuda(non_blocking=True)
             batchSize = inputs.size(0)
-            features = net(inputs)
+            features,_ = net(inputs)
             trainFeatures[:, batch_idx*batchSize:batch_idx*batchSize+batchSize] = features.data.t()
         
         if not(torch.cuda.is_available()):
@@ -91,7 +91,7 @@ def kNN(epoch, net, lemniscate, trainloader, testloader, K, sigma, recompute_mem
     if recompute_memory:
         transform_bak = trainloader.dataset.transform
         trainloader.dataset.transform = testloader.dataset.transform
-        
+
         temploader = torch.utils.data.DataLoader(trainloader.dataset, batch_size=100, shuffle=False, num_workers=1)
 
         for batch_idx, (inputs, targets, indexes) in enumerate(temploader):
