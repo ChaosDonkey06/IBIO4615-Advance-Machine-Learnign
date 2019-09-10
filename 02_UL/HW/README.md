@@ -16,7 +16,17 @@
   
    Below is shown the performance (Top 1 Accuracy) obtained by both architectures. As expected resnet18 clasify way better than the encoder-decoder with the enconder suggested architecture, this is probably caused by the incapacity of the encoder to represent deeply all the features of the images (just 1 layer). 
   
-![Top 1 Accuracy](./figures/performance.png)  
+  ![Top 1 Accuracy](./figures/performance.png)  
+
+#### Reconstructions:
+  The image below shows different obtained reconstructions by the decoder:
+  
+  ![Top 1 Accuracy](./figures/im01.png)  
+  ![Top 1 Accuracy](./figures/im02.png)  
+  ![Top 1 Accuracy](./figures/im03.png)  
+  ![Top 1 Accuracy](./figures/im04.png)  
+  ![Top 1 Accuracy](./figures/im05.png)  
+
 
   
 
