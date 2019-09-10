@@ -141,7 +141,7 @@ if __name__ == '__main__':
     def train(epoch):
         print('\nEpoch: %d' % epoch)
         adjust_learning_rate(optimizer, epoch)
-        
+
         train_loss = AverageMeter()
         data_time = AverageMeter()
         batch_time = AverageMeter()
@@ -184,17 +184,18 @@ if __name__ == '__main__':
                     'Data: {data_time.val:.3f} ({data_time.avg:.3f}) '
                     'Loss: {train_loss.val:.4f} ({train_loss.avg:.4f})'.format(
                     epoch, batch_idx, len(trainloader), batch_time=batch_time, data_time=data_time, train_loss=train_loss))
+            return train_loss
 
         print('Epoch: {} | Loss: ({train_loss.avg:.4f})'.format(epoch,train_loss=train_loss))
 
     file1 = open("./ChaosDonkey06_AEmodel_acc_train.txt","a")  
     file2 = open("./ChaosDonkey06_AEmodel_acc_test.txt","a") 
     for epoch in range(start_epoch, start_epoch+args.epochs):
-        train(epoch)
+        t_loss=train(epoch)
         
-        acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
-        print('Epoch: {} | Accuracy: ({})'.format(epoch,acc))
-        file1.write('{} | {} \n'.format(epoch,acc)) 
+        #acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
+        print('Epoch: {} | Accuracy: ({})'.format(epoch,t_loss))
+        file1.write('{} | {} \n'.format(epoch,t_loss)) 
 
         if acc > best_acc:
             print('Saving..')
@@ -211,7 +212,7 @@ if __name__ == '__main__':
 
         print('best accuracy: {:.2f}'.format(best_acc*100))
 
-    acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
-    file2.write('{} | {} \n'.format(epoch,acc)) 
+    #acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
+    #file2.write('{} | {} \n'.format(epoch,acc)) 
 
     print('last accuracy: {:.2f}'.format(acc*100))
