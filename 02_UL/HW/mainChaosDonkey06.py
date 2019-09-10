@@ -184,14 +184,13 @@ if __name__ == '__main__':
                     'Data: {data_time.val:.3f} ({data_time.avg:.3f}) '
                     'Loss: {train_loss.val:.4f} ({train_loss.avg:.4f})'.format(
                     epoch, batch_idx, len(trainloader), batch_time=batch_time, data_time=data_time, train_loss=train_loss))
-            return train_loss
-
+                    
         print('Epoch: {} | Loss: ({train_loss.avg:.4f})'.format(epoch,train_loss=train_loss))
 
     file1 = open("./ChaosDonkey06_AEmodel_acc_train.txt","a")  
     file2 = open("./ChaosDonkey06_AEmodel_acc_test.txt","a") 
     for epoch in range(start_epoch, start_epoch+args.epochs):
-        t_loss=train(epoch)
+        train(epoch)
         
         acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
         print('Epoch: {} | Accuracy: ({})'.format(epoch,t_loss))
