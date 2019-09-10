@@ -185,11 +185,14 @@ if __name__ == '__main__':
 
         print('Epoch: {} | Loss: ({train_loss.avg:.4f})'.format(epoch,train_loss=train_loss))
 
+    file1 = open("./ChaosDonkey06_AEmodel_acc_train.txt","a")  
+    file2 = open("./ChaosDonkey06_AEmodel_acc_test.txt","a") 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         train(epoch)
         
         acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
         print('Epoch: {} | Accuracy: ({})'.format(epoch,acc))
+        file1.write('{} | {} \n'.format(epoch,acc)) 
 
         if acc > best_acc:
             print('Saving..')
@@ -207,4 +210,6 @@ if __name__ == '__main__':
         print('best accuracy: {:.2f}'.format(best_acc*100))
 
     acc = kNN(0, net, lemniscate, trainloader, testloader, 200, args.nce_t, 1)
+    file2.write('{} | {} \n'.format(epoch,acc)) 
+
     print('last accuracy: {:.2f}'.format(acc*100))
