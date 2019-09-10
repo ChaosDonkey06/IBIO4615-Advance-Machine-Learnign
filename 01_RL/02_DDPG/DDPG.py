@@ -228,7 +228,7 @@ def main():
                 ep_r += reward
                 env.render()
                 if done or t >= args.max_length_of_trajectory:
-                    print("Episode: \t{}, the episode reward is \t{:0.2f}, the environment step was \t{}".format(i, ep_r, t))
+                    print("Episode: \t{} | Episode Reward: \t{:0.2f} | Environment Step: {}".format(i, ep_r, t))
                     ep_r = 0
                     break
                 state = next_state

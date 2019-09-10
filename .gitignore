@@ -1,0 +1,8 @@
+.DS_Store
+*./DS_Store
+.Trashes
+
+*.swp
+
+data/
+02_UL/data/
