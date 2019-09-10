@@ -141,9 +141,11 @@ if __name__ == '__main__':
     def train(epoch):
         print('\nEpoch: %d' % epoch)
         adjust_learning_rate(optimizer, epoch)
+        
         train_loss = AverageMeter()
         data_time = AverageMeter()
         batch_time = AverageMeter()
+
         correct = 0
         total = 0
 
