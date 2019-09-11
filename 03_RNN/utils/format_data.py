@@ -3,6 +3,10 @@ import unicodedata
 import string
 import re
 import random
+import torch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class Lang:
     def __init__(self, name):
@@ -34,7 +38,6 @@ def unicodeToAscii(s):
     )
 
 # Lowercase, trim, and remove non-letter characters
-
 def normalizeString(s):
     s = unicodeToAscii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
