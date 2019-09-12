@@ -5,6 +5,9 @@ import string
 import re
 import random
 
+import time
+import math
+
 import torch
 import torch.nn as nn
 from torch import optim
@@ -78,9 +81,6 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     return loss.item() / target_length
 
-import time
-import math
-
 
 def asMinutes(s):
     m = math.floor(s / 60)
@@ -146,6 +146,10 @@ def showPlot(points):
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
+    if device == 'gpu':
+        plt.savefig('./figures/GRU_performance.png', dpi=fig.dpi))
+    else:
+        plt.show()
 
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     with torch.no_grad():
