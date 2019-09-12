@@ -147,7 +147,7 @@ def showPlot(points):
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
     if device == 'gpu':
-        plt.savefig('./figures/GRU_performance.png', dpi=fig.dpi))
+        plt.savefig('./figures/GRU_performance.png')
     else:
         plt.show()
 
