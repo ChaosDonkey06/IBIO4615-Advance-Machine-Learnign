@@ -19,7 +19,7 @@ class EncoderRNN_SRU(nn.Module):
         
         embedded = self.embedding(input).view(1, 1, -1)
         output = embedded
-        output, (hidden,cell) = self.sru(output, (hidden,cell) )
+        output, hidden = self.sru(output, hidden)
         return output, hidden, cell
 
     def initHidden(self):
@@ -42,7 +42,7 @@ class DecoderRNN_SRU(nn.Module):
         output = self.embedding(input).view(1, 1, -1)
 
         output = F.relu(output)
-        output, (hidden, cell) = self.sru(output, (hidden,cell) )
+        output, hidden = self.sru(output, hidden)
         output = self.softmax(self.out(output[0]))
         return output, hidden, cell
 
@@ -79,10 +79,10 @@ class AttnDecoderRNN_SRU(nn.Module):
         output = self.attn_combine(output).unsqueeze(0)
 
         output = F.relu(output)
-        output, (hidden,cell) = self.sru(output , (hidden,cell) )
+        output, hidden = self.sru(output, hidden)
 
         output = F.log_softmax(self.out(output[0]), dim=1)
-        return output, hidden, cell , attn_weights
+        return output, hidden , attn_weights
 
     def initHidden(self):
         return torch.zeros(1, 1, self.hidden_size, device=device)
