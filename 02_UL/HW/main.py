@@ -27,10 +27,10 @@ from lib.NCECriterion import NCECriterion
 from lib.utils import AverageMeter
 from test import NN, kNN
 
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser = argparse.ArgumentParser(description='PyTorch MNIST Training')
 parser.add_argument('--lr', default=0.03, type=float, help='learning rate')
 parser.add_argument('--resume', '-r', default='', type=str, help='resume from checkpoint')
-parser.add_argument('--test-only', action='store_true', help='test only')
+parser.add_argument('--test-only', default=False ,, action='store_true', help='test only')
 parser.add_argument('--low-dim', default=128, type=int,
                     metavar='D', help='feature dimension')
 parser.add_argument('--nce-k', default=0, type=int,
@@ -167,6 +167,7 @@ if __name__ == '__main__':
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         train(epoch)
+        
         acc = kNN(epoch, net, lemniscate, trainloader, testloader, 200, args.nce_t, 0)
 
         if acc > best_acc:
