@@ -13,6 +13,12 @@ import torch.nn as nn
 from torch import optim
 import torch.nn.functional as F
 
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import numpy as np
+
+
+
 from utils import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -28,12 +34,8 @@ MAX_LENGTH = 10
 input_lang, output_lang, pairs = prepareData('eng', 'fra', True,MAX_LENGTH)
 print(random.choice(pairs))
 teacher_forcing_ratio = 0.5
-
-
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
-    
     encoder_hidden = encoder.initHidden()
-    encoder_cell = encoder.initHidden()
 
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
@@ -46,9 +48,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     loss = 0
 
     for ei in range(input_length):
-        print('THIS IS THE CURRENT EI {}'.format(ei))
         encoder_output, encoder_hidden = encoder(
-            input_tensor[ei], encoder_hidden ,encoder_cell)
+            input_tensor[ei], encoder_hidden)
         encoder_outputs[ei] = encoder_output[0, 0]
 
     decoder_input = torch.tensor([[SOS_token]], device=device)
@@ -62,7 +63,6 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         for di in range(target_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
-
             loss += criterion(decoder_output, target_tensor[di])
             decoder_input = target_tensor[di]  # Teacher forcing
 
@@ -71,7 +71,6 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         for di in range(target_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
-
             topv, topi = decoder_output.topk(1)
             decoder_input = topi.squeeze().detach()  # detach from history as input
 
@@ -85,6 +84,9 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     decoder_optimizer.step()
 
     return loss.item() / target_length
+
+import time
+import math
 
 
 def asMinutes(s):
@@ -100,7 +102,7 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def trainIters(encoder, decoder,input_lang,output_lang, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
+def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -108,12 +110,9 @@ def trainIters(encoder, decoder,input_lang,output_lang, n_iters, print_every=100
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-
-    training_pairs = [tensorsFromPair(random.choice(pairs),input_lang,output_lang)
+    training_pairs = [tensorsFromPair(random.choice(pairs))
                       for i in range(n_iters)]
-
     criterion = nn.NLLLoss()
-
 
     for iter in range(1, n_iters + 1):
         training_pair = training_pairs[iter - 1]
@@ -138,11 +137,6 @@ def trainIters(encoder, decoder,input_lang,output_lang, n_iters, print_every=100
 
     showPlot(plot_losses)
 
-import matplotlib.pyplot as plt
-plt.switch_backend('agg')
-import matplotlib.ticker as ticker
-import numpy as np
-
 
 def showPlot(points):
     plt.figure()
@@ -151,17 +145,12 @@ def showPlot(points):
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
-    if device == 'cuda':
-        plt.savefig('./figures/GRU_performance.png')
-    else:
-        plt.show()
 
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     with torch.no_grad():
         input_tensor = tensorFromSentence(input_lang, sentence)
         input_length = input_tensor.size()[0]
         encoder_hidden = encoder.initHidden()
-
 
         encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
 
@@ -193,14 +182,10 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         return decoded_words, decoder_attentions[:di + 1]
 
 hidden_size = 256
-#encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-#attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
 
-encoder1 = EncoderRNN_SRU(input_lang.n_words, hidden_size).to(device)
-attn_decoder1 = AttnDecoderRNN_SRU(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
-
-
-trainIters(encoder1, attn_decoder1,input_lang,output_lang, n_iters=75000, print_every=1000)
+trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
 def showAttention(input_sentence, output_words, attentions):
     # Set up figure with colorbar
@@ -229,6 +214,9 @@ def evaluateAndShowAttention(input_sentence):
 
 
 evaluateAndShowAttention("elle a cinq ans de moins que moi .")
+
 evaluateAndShowAttention("elle est trop petit .")
+
 evaluateAndShowAttention("je ne crains pas de mourir .")
+
 evaluateAndShowAttention("c est un jeune directeur plein de talent .")
