@@ -13,7 +13,7 @@ class EncoderRNN_SRU(nn.Module):
         self.hidden_size = hidden_size
 
         self.embedding = nn.Embedding(input_size, hidden_size)
-        self.sru = nn.SRU(hidden_size, hidden_size)
+        self.sru = SRU(hidden_size, hidden_size)
 
     def forward(self, input, hidden ,cell ):
         
