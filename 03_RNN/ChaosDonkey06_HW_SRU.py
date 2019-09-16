@@ -13,12 +13,6 @@ import torch.nn as nn
 from torch import optim
 import torch.nn.functional as F
 
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import numpy as np
-
-
-
 from utils import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -34,6 +28,8 @@ MAX_LENGTH = 10
 input_lang, output_lang, pairs = prepareData('eng', 'fra', True,MAX_LENGTH)
 print(random.choice(pairs))
 teacher_forcing_ratio = 0.5
+
+
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
     encoder_hidden = encoder.initHidden()
 
@@ -102,7 +98,7 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
+def trainIters(encoder, decoder,input_lang,output_lang, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -110,7 +106,8 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-    training_pairs = [tensorsFromPair(random.choice(pairs))
+
+    training_pairs = [tensorsFromPair(random.choice(pairs),input_lang,output_lang)
                       for i in range(n_iters)]
     criterion = nn.NLLLoss()
 
@@ -136,6 +133,12 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
             plot_loss_total = 0
 
     showPlot(plot_losses)
+
+
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+import matplotlib.ticker as ticker
+import numpy as np
 
 
 def showPlot(points):
