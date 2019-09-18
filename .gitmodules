@@ -1,0 +1,3 @@
+[submodule "00_Proyecto/00_Proyecto/stnn"]
+	path = 00_Proyecto/00_Proyecto/stnn
+	url = https://github.com/ChaosDonkey06/stnn.git
