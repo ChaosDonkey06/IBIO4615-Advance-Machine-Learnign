@@ -1,34 +1,41 @@
-# Spatio-Temporal Neural Networks for Space-Time Series Forecasting and Relation Discovery
+# Dengue Ibague
+Dengue Ibague data analysis
 
-ICDM 2017 - IEEE International Conference on Data Mining series (ICDM)
+## Dengue time evolution
 
-[Conference Paper](https://ieeexplore.ieee.org/document/8215543/)
+Total cases by year            | Time evolution
+:-------------------------:|:-------------------------:
+![](./figures/CasesBar_vs_year.png)  |  ![](./figures/Cases_vs_week_year.png)
 
-[Journal Extension](https://link.springer.com/article/10.1007/s10115-018-1291-x)
+## Dengue time evolution risk index by Comuna from 2013-2018
 
-Commands for reproducing synthetic experiments:
+2013           | 2014
+:-------------------------:|:-------------------------:
+![](./figures/gifs/riskRatio_2013.gif)  |  ![](./figures/gifs/riskRatio_2014.gif)
 
-## Heat Diffusion
-### STNN
-`python train_stnn.py --dataset heat --outputdir output_heat --manualSeed 2021 --xp stnn`
+2015           | 2016
+:-------------------------:|:-------------------------:
+![](./figures/gifs/riskRatio_2015.gif)  |  ![](./figures/gifs/riskRatio_2016.gif)
 
-### STNN-R(efine)
-`python train_stnn.py --dataset heat --outputdir output_heat --manualSeed 5718 --xp stnn_r --mode refine --patience 800 --l1_rel 1e-8`
-
-### STNN-D(iscovery)
-`python train_stnn.py --dataset heat --outputdir output_heat --manualSeed 9690 --xp stnn_d --mode discover --patience 1000 --l1_rel 3e-6`
+2017           | 2018
+:-------------------------:|:-------------------------:
+![](./figures/gifs/riskRatio_2017.gif)  |  ![](./figures/gifs/riskRatio_2018.gif)
 
 
-## Modulated Heat Diffusion
-### STNN
-`python train_stnn.py --dataset heat_m --outputdir output_heat_m --manualSeed 679 --xp stnn`
 
-### STNN-R(efine)
-`python train_stnn.py --dataset heat_m --outputdir output_heat_m --manualSeed 3488 --xp stnn_r --mode refine --l1_rel 1e-5`
+## Dengue time evolution cases by Comuna from 2013-2018
 
-### STNN-D(iscovery)
-`python train_stnn_.py --dataset heat_m --outputdir output_m --xp test --manualSeed 7664 --mode discover --patience 500 --l1_rel 3e-6`
+2013           | 2014
+:-------------------------:|:-------------------------:
+![](./figures/gifs/cases_week_2013.gif)  |  ![](./figures/gifs/cases_week_2014.gif)
 
-## Data format
-The file `heat.csv` contains the raw temperature data. The 200 rows correspond to the 200 timestep, and the 41 columns are the 41 space points.
-The file `heat_relations.csv` contains the spatial relation between the 41 space points. It is a 41 by 41 adjacency matrix _A_, where _A(i, j)_ = 1 means that series _i_ is a direct neighbor of series _j_ in space, and is 0 otherwise.
+2015           | 2016
+:-------------------------:|:-------------------------:
+![](./figures/gifs/cases_week_2015.gif)  |  ![](./figures/gifs/cases_week_2016.gif)
+
+2017           | 2018
+:-------------------------:|:-------------------------:
+![](./figures/gifs/cases_week_2017.gif)  |  ![](./figures/gifs/cases_week_2018.gif)
+
+
+
