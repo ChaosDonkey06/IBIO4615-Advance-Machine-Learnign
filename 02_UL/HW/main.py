@@ -80,7 +80,10 @@ if __name__ == '__main__':
     ndata = trainset.__len__()
 
     print('==> Building model..')
-    net = models.__dict__['ResNet18'](low_dim = args.low_dim)
+    net = models.__dict__['ResNet18']
+    
+
+    
     # define leminiscate
     if args.nce_k > 0:
         lemniscate = NCEAverage(args.low_dim, ndata, args.nce_k, args.nce_t, args.nce_m)
